@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.12", features = ["derive"] }
-chrono = "0.4.31"
-serial2 = "0.2.15"
+serialport = {git = "https://github.com/LukaOber/serialport-rs", branch = "pr/34"} # currenly the only branch which works on windows
