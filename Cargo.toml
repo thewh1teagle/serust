@@ -6,5 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.79"
 clap = { version = "4.4.12", features = ["derive"] }
+env_logger = "0.10.1"
+log = "0.4.20"
 serialport = {git = "https://github.com/LukaOber/serialport-rs", branch = "pr/34"} # currenly the only branch which works on windows
