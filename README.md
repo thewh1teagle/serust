@@ -5,7 +5,18 @@ Serial monitor in Rust
 # Features ✨
 - Read and write by pressing in terminal
 - Auto reconnect
-- Connect by port name, and optinally by product ID (USB PID)
+- Option to Connect product ID! (USB PID)
+
+# Install
+```console
+cargo install serust
+```
+
+# Usage
+You can get info by
+```console
+serust -h
+```
 
 # Build
 ```console
