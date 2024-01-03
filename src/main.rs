@@ -77,7 +77,7 @@ fn list_ports() -> Result<()> {
     };
     
     for (index, port) in ports.into_iter().enumerate() {
-        println!("{}. Port: {}", index + 1, port.port_name);
+        println!("{}. {}", index + 1, port.port_name);
         
         match port.port_type {
             SerialPortType::UsbPort(info) => {
