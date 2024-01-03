@@ -368,9 +368,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "serialport"
+name = "serialport5"
 version = "5.0.0"
-source = "git+https://github.com/thewh1teagle/serialport-rs?branch=main#7aa620783ce4b1bd175aa25cec43437fa7c7faa0"
+source = "git+https://github.com/thewh1teagle/serialport-rs?branch=main#2042b06248177701b5ef63fb5a9bb09fca756c79"
 dependencies = [
  "CoreFoundation-sys",
  "IOKit-sys",
@@ -391,7 +391,7 @@ dependencies = [
  "clap",
  "env_logger",
  "log",
- "serialport",
+ "serialport5",
 ]
 
 [[package]]

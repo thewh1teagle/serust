@@ -1,7 +1,7 @@
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use serialport::{self, SerialPort, SerialPortBuilder, SerialPortType, SerialPortInfo};
+use serialport5::{self, SerialPort, SerialPortBuilder, SerialPortType, SerialPortInfo};
 use clap::{Parser, ArgAction};
 use anyhow::{Result, bail, Context};
 use env_logger;
@@ -33,7 +33,7 @@ struct Args {
 }
 
 fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
-    let ports = serialport::available_ports().unwrap();
+    let ports = serialport5::available_ports().unwrap();
     for port in ports {
         let port_clone = port.clone();
         match port.port_type {
@@ -68,7 +68,7 @@ fn open_serial_port(args: &Args) -> Result<(SerialPort, String)> {
 }
 
 fn list_ports() -> Result<()> {
-    let ports = serialport::available_ports()?;
+    let ports = serialport5::available_ports()?;
     
     match ports.len() {
         0 => println!("No ports found."),
