@@ -369,8 +369,8 @@ dependencies = [
 
 [[package]]
 name = "serialport"
-version = "5.0.0-alpha.0"
-source = "git+https://github.com/thewh1teagle/serialport-rs?branch=pr/34#310ab9c64b7bbeaea52255a7a4059f2d798c8214"
+version = "5.0.0"
+source = "git+https://github.com/thewh1teagle/serialport-rs?branch=main#7aa620783ce4b1bd175aa25cec43437fa7c7faa0"
 dependencies = [
  "CoreFoundation-sys",
  "IOKit-sys",
