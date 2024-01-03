@@ -1,10 +1,11 @@
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use serialport::{self, SerialPort, SerialPortBuilder, SerialPortType, SerialPortInfo};
 use clap::Parser;
 use anyhow::{Result, bail, Context};
 use env_logger;
-use log::{debug, info};
+use log::{info, warn};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -21,6 +22,9 @@ struct Args {
     /// find automatically based on pid of usb
     #[arg(long)]
     product_id: Option<String>, 
+
+    #[arg(short, long)]
+    reconnect: Option<bool>,
 }
 
 fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
@@ -40,7 +44,7 @@ fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
     Ok(None)
 }
 
-fn open_serial_port(args: &Args) -> Result<SerialPort> {
+fn open_serial_port(args: &Args) -> Result<(SerialPort, String)> {
     let port_name = if args.product_id.is_some() {
         find_by_product_id(&args)?
             .map(|port_info| port_info.port_name)
@@ -48,33 +52,87 @@ fn open_serial_port(args: &Args) -> Result<SerialPort> {
         args.port.clone()
     };
 
-    info!("open port {:?} with rate of {}", port_name, args.baud_rate.unwrap());
+    let port_name = port_name.clone().context("Port not found!")?;
+    let baud_rate = args.baud_rate.context("No baud rate specified!")?;
+    info!("open port {:?} with rate of {}", port_name, baud_rate);
     let port = SerialPortBuilder::new()
-        .baud_rate(args.baud_rate.unwrap())
-        .open(port_name.unwrap())?;
+        .baud_rate(baud_rate)
+        .open(port_name.clone())?;
 
-    Ok(port)
+    Ok((port, port_name))
 }
 
-
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     let args = Args::parse();
 
-    let port = open_serial_port(&args)?;
-    let port_arc = Arc::new(Mutex::new(port));
+    if args.reconnect.unwrap_or_default() {
+        let mut retry_count = 0;
 
-    let port_arc_clone = port_arc.clone();
+        loop {
+            let result = open_serial_port(&args);
+            match result {
+                Ok((port, name)) => {
 
-    // Spawn a thread to read from stdin and write to the serial port.
-    std::thread::spawn(move || {
-        if let Err(_) = read_stdin_loop(port_arc_clone, "port_name_placeholder") {
-            std::process::exit(1);
+                    let port_arc = Arc::new(Mutex::new(port.try_clone()?));
+                    let port_arc_clone = port_arc.clone();
+        
+                    // Spawn a thread to read from stdin and write to the serial port.
+                    std::thread::spawn(move || {
+                        if let Err(_) = read_stdin_loop(port_arc_clone, "port_name_placeholder") {
+                            std::process::exit(1);
+                        }
+                    });
+        
+                    // Read from serial port and write to stdout in the main thread.
+                    match read_serial_loop(port_arc, "port_name_placeholder") {
+                        Ok(_) => {
+                            // Successful read, break out of the loop
+                            break;
+                        }
+                        Err(_) => {
+                            // Reconnect
+                                // Delay before attempting the next reconnect
+                                std::thread::sleep(Duration::from_secs(1));
+        
+                                // Decrease the retry count
+                                retry_count -= 1;
+        
+                                // Log a message or take any other necessary action
+                                log::warn!("Reconnecting... Retries left: {}", retry_count);
+                            
+                        }
+                    }
+                }
+                _ => {
+                    retry_count += 1;
+                    std::thread::sleep(Duration::from_secs(1));
+                }
+            }
+
         }
-    });
+    } else {
+        // Connect normally without reconnection logic
+        let (port, name): (SerialPort, String) = open_serial_port(&args)?;
+        let port_arc = Arc::new(Mutex::new(port));
 
-    // Read from serial port and write to stdout in the main thread.
-    read_serial_loop(port_arc, "port_name_placeholder")?;
+        let port_arc_clone = port_arc.clone();
+
+        // Spawn a thread to read from stdin and write to the serial port.
+        std::thread::spawn(move || {
+            if let Err(_) = read_stdin_loop(port_arc_clone, &name) {
+                std::process::exit(1);
+            }
+        });
+
+        // Read from serial port and write to stdout in the main thread.
+        match read_serial_loop(port_arc, "port_name_placeholder") {
+            Err(_) => {
+                // Handle any specific error logic if needed
+            }
+            _ => {}
+        }
+    }
 
     Ok(())
 }
@@ -110,7 +168,7 @@ fn read_serial_loop(port: Arc<Mutex<SerialPort>>, port_name: &str) -> Result<()>
             }
             Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => continue,
             Err(e) => {
-                eprintln!("Error: Failed to read from {}: {}", port_name, e);
+                warn!("Failed to read from {}: {}", port_name, e);
                 bail!("");
             }
         }
