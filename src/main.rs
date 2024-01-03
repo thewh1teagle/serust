@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use serialport::{self, SerialPort, SerialPortBuilder, SerialPortType, SerialPortInfo};
-use clap::Parser;
+use clap::{Parser, ArgAction};
 use anyhow::{Result, bail, Context};
 use env_logger;
 use log::{info, warn};
@@ -23,8 +23,13 @@ struct Args {
     #[arg(long)]
     product_id: Option<String>, 
 
-    #[arg(short, long)]
+    /// reconnect automatically if disconnected
+    #[arg(short, long, action=ArgAction::SetTrue)]
     reconnect: Option<bool>,
+
+    /// List available ports
+    #[arg(short, long, action=ArgAction::SetTrue)]
+    list: Option<bool>,
 }
 
 fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
@@ -62,17 +67,50 @@ fn open_serial_port(args: &Args) -> Result<(SerialPort, String)> {
     Ok((port, port_name))
 }
 
+fn list_ports() -> Result<()> {
+    let ports = serialport::available_ports()?;
+    
+    match ports.len() {
+        0 => println!("No ports found."),
+        1 => println!("Found 1 port:"),
+        n => println!("Found {} ports:", n),
+    };
+    
+    for (index, port) in ports.into_iter().enumerate() {
+        println!("{}. Port: {}", index + 1, port.port_name);
+        
+        match port.port_type {
+            SerialPortType::UsbPort(info) => {
+                println!("   Type: USB");
+                println!("   VID: {:04x} PID: {:04x}", info.vid, info.pid);
+                println!("   Serial Number: {}", info.serial_number.as_deref().unwrap_or("N/A"));
+                println!("   Manufacturer: {}", info.manufacturer.as_deref().unwrap_or("N/A"));
+            }
+            _ => {
+                // Handle other SerialPortType cases if necessary
+                // For now, we'll just print "   Type: Unknown"
+                println!("   Type: Unknown");
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     let args = Args::parse();
-
+    if args.list.unwrap_or_default() {
+        list_ports()?;
+        std::process::exit(0);
+    }
     if args.reconnect.unwrap_or_default() {
         let mut retry_count = 0;
 
         loop {
             let result = open_serial_port(&args);
             match result {
-                Ok((port, name)) => {
+                Ok((port, _)) => {
 
                     let port_arc = Arc::new(Mutex::new(port.try_clone()?));
                     let port_arc_clone = port_arc.clone();
