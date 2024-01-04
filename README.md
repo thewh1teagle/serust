@@ -12,12 +12,15 @@ Serial monitor in Rust
 
 Get binary from [releases](https://github.com/thewh1teagle/serust/releases)
 
+Install with winget
+```console
+winget install Thewh1teagle.Serust
+```
 Install with `cargo`
 ```console
 cargo install serust
 ```
-Install
-with `msys2`
+Install with `msys2`
 ```console
 ${MINGW_PACKAGE_PREFIX}-serust
 ```
