@@ -1,3 +1,4 @@
+use anyhow::{bail, Result};
 use clap::{ArgAction, Parser};
 
 #[derive(Parser)]
@@ -7,14 +8,19 @@ pub struct Args {
     #[arg(short, long)]
     pub port: Option<String>,
 
-    /// port name (eg. COM23 OR /dev/ttyUSB0)
-    #[arg(short, long, default_value = "115200")]
-    pub baud_rate: Option<u32>,
-
     /// product ID (as hex value, eg: 000a)
     /// find automatically based on pid of usb
     #[arg(long)]
     pub product_id: Option<String>,
+
+    /// vendor ID (as hex value, eg: 000a)
+    /// find automatically based on pid of usb
+    #[arg(long)]
+    pub vendor_id: Option<String>,
+
+    /// port name (eg. COM23 OR /dev/ttyUSB0)
+    #[arg(short, long, default_value = "115200")]
+    pub baud_rate: Option<u32>,
 
     /// reconnect automatically if disconnected
     #[arg(short, long, action=ArgAction::SetTrue)]
@@ -22,5 +28,19 @@ pub struct Args {
 
     /// List available ports
     #[arg(short, long, action=ArgAction::SetTrue)]
-    pub list: Option<bool>,
+    pub list: bool,
+}
+
+impl Args {
+    pub fn validate(&self) -> Result<()> {
+        if self.list {
+            // If list is true, no other arguments are required
+            Ok(())
+        } else if self.port.is_none() && self.vendor_id.is_none() && self.product_id.is_none() {
+            // If list is not provided, at least one of port, vendor_id, or product_id must be provided
+            bail!("Please provide either a port, vendor ID, or product ID")
+        } else {
+            Ok(())
+        }
+    }
 }

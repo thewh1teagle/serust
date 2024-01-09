@@ -27,8 +27,6 @@ pub fn list_ports() -> Result<()> {
                 );
             }
             _ => {
-                // Handle other SerialPortType cases if necessary
-                // For now, we'll just print "   Type: Unknown"
                 println!("   Type: Unknown");
             }
         }

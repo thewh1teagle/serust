@@ -6,14 +6,17 @@ use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-pub fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
+pub fn find_by_usb_info(args: &Args) -> Result<Option<SerialPortInfo>> {
     let ports = serialport5::available_ports().unwrap();
     for port in ports {
         let port_clone = port.clone();
         match port.port_type {
             SerialPortType::UsbPort(info) => {
                 let pid = format!("{:04x}", info.pid);
-                if args.product_id.clone().unwrap() == pid {
+                let vid = format!("{:04x}", info.vid);
+                if args.product_id.clone().unwrap_or_default() == pid {
+                    return Ok(Some(port_clone));
+                } else if args.vendor_id.clone().unwrap_or_default() == vid {
                     return Ok(Some(port_clone));
                 }
             }
@@ -24,8 +27,8 @@ pub fn find_by_product_id(args: &Args) -> Result<Option<SerialPortInfo>> {
 }
 
 pub fn open_serial_port(args: &Args) -> Result<(SerialPort, String)> {
-    let port_name = if args.product_id.is_some() {
-        find_by_product_id(&args)?.map(|port_info| port_info.port_name)
+    let port_name = if args.product_id.is_some() || args.vendor_id.is_some() {
+        find_by_usb_info(&args)?.map(|port_info| port_info.port_name)
     } else {
         args.port.clone()
     };
