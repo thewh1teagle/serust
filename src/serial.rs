@@ -2,7 +2,7 @@ use crate::args::Args;
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
 use serialport5::{self, SerialPort, SerialPortBuilder, SerialPortInfo, SerialPortType};
-use std::io::{Read, Write};
+use std::io::{self, BufWriter, Read, Stdout, Write};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -61,15 +61,25 @@ pub fn read_stdin_loop(port: Arc<Mutex<SerialPort>>, port_name: &str) -> Result<
     }
 }
 
-pub fn read_serial_loop(port: Arc<Mutex<SerialPort>>, port_name: &str) -> Result<()> {
+pub fn read_serial_loop<W: Write>(
+    port: Arc<Mutex<SerialPort>>,
+    stdout: &mut W,
+    flush_stdout: bool,
+    port_name: &str,
+) -> Result<()> {
     let mut buffer = [0; 512];
     loop {
         let mut port = port.lock().unwrap();
         match port.read(&mut buffer) {
             Ok(0) => return Ok(()),
-            Ok(n) => std::io::stdout()
-                .write_all(&buffer[..n])
-                .context("Failed to write to stdout")?,
+            Ok(n) => {
+                stdout
+                    .write_all(&buffer[..n])
+                    .context("Failed to write to stdout")?;
+                if flush_stdout {
+                    stdout.flush().context("Failed to flush stdout")?;
+                }
+            }
             Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => continue,
             Err(e) => {
                 warn!("Failed to read from {}: {}", port_name, e);
@@ -79,8 +89,18 @@ pub fn read_serial_loop(port: Arc<Mutex<SerialPort>>, port_name: &str) -> Result
     }
 }
 
+pub fn get_stdout_with_buffer_size(args: &Args) -> Box<dyn Write> {
+    if let Some(buf_size) = args.buf_size {
+        Box::new(BufWriter::with_capacity(buf_size, io::stdout()))
+    } else {
+        Box::new(io::stdout())
+    }
+}
+
 pub fn open_with_reconnect(args: &Args) -> Result<()> {
     let mut retry_count = 0;
+
+    let mut stdout = get_stdout_with_buffer_size(args);
 
     loop {
         let result = open_serial_port(&args);
@@ -98,7 +118,7 @@ pub fn open_with_reconnect(args: &Args) -> Result<()> {
                 });
 
                 // Read from serial port and write to stdout in the main thread.
-                match read_serial_loop(port_arc, &name) {
+                match read_serial_loop(port_arc, &mut stdout, args.flush, &name) {
                     Ok(_) => {
                         // Successful read, break out of the loop
                         break;
@@ -140,8 +160,10 @@ pub fn open(args: &Args) -> Result<()> {
         }
     });
 
+    let mut stdout = BufWriter::new(std::io::stdout());
+
     // Read from serial port and write to stdout in the main thread.
-    match read_serial_loop(port_arc, &name) {
+    match read_serial_loop(port_arc, &mut stdout, args.flush, &name) {
         Err(_) => {
             // Handle any specific error logic if needed
         }
