@@ -20,10 +20,6 @@ Install with `cargo`
 ```console
 cargo install serust
 ```
-Install with `msys2`
-```console
-${MINGW_PACKAGE_PREFIX}-serust
-```
 
 # Usage
 You can get info by
