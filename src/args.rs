@@ -18,7 +18,7 @@ pub struct Args {
     #[arg(long)]
     pub vendor_id: Option<String>,
 
-    /// port name (eg. COM23 OR /dev/ttyUSB0)
+    /// baud rate
     #[arg(short, long, default_value = "115200")]
     pub baud_rate: Option<u32>,
 
@@ -29,6 +29,14 @@ pub struct Args {
     /// List available ports
     #[arg(short, long, action=ArgAction::SetTrue)]
     pub list: bool,
+
+    /// Buffer size of stdout
+    #[arg(short, long)]
+    pub buf_size: Option<usize>,
+
+    /// flush stdout after every write
+    #[arg(short, long, action=ArgAction::SetTrue)]
+    pub flush: bool,
 }
 
 impl Args {
