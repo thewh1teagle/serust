@@ -65,11 +65,6 @@ jobs:
         # failing. otherwise `sh` won't catch that `curl` returned non-0
         shell: bash
         run: "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.10.0/cargo-dist-installer.sh | sh"
-      - name: Install linux deps
-        if: ${{ contains(matrix.os, 'ubuntu') }}
-        run: |
-          apt-get update
-          apt-get install -y libudev-dev
       # sure would be cool if github gave us proper conditionals...
       # so here's a doubly-nested ternary-via-truthiness to try to provide the best possible
       # functionality based on whether this is a pull_request, and whether it's from a fork.
@@ -128,6 +123,11 @@ jobs:
       - name: Install dependencies
         run: |
           ${{ matrix.packages_install }}
+      - name: Install linux deps
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+        run: |
+          apt-get update
+          apt-get install -y libudev-dev
       - name: Build artifacts
         run: |
           # Actually do builds and make zips and whatnot
