@@ -124,7 +124,7 @@ jobs:
         run: |
           ${{ matrix.packages_install }}
       - name: Install linux deps
-        if: ${{ contains(matrix.os, 'ubuntu') }}
+        if: ${{ contains(matrix.os, 'linux') }}
         run: |
           apt-get update
           apt-get install -y libudev-dev
