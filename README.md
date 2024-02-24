@@ -8,18 +8,10 @@ Serial monitor in Rust
 - Auto reconnect
 - Option to Connect product ID! (USB PID)
 
-# Install
+# Installation
 
-Get binary from [releases](https://github.com/thewh1teagle/serust/releases)
+To install rsc, please visit the [serust website](https://thewh1teagle.github.io/serust/)
 
-Install with winget
-```console
-winget install Thewh1teagle.Serust
-```
-Install with `cargo`
-```console
-cargo install serust
-```
 
 # Usage
 You can get info by
