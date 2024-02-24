@@ -31,7 +31,7 @@ pub struct Args {
     pub list: bool,
 
     /// Buffer size of stdout
-    #[arg(short, long)]
+    #[arg(long)]
     pub buf_size: Option<usize>,
 
     /// flush stdout after every write

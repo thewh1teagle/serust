@@ -2,7 +2,7 @@ use crate::args::Args;
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
 use serialport5::{self, SerialPort, SerialPortBuilder, SerialPortInfo, SerialPortType};
-use std::io::{self, BufWriter, Read, Stdout, Write};
+use std::io::{self, BufWriter, Read, Write};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
