@@ -369,9 +369,9 @@ dependencies = [
 
 [[package]]
 name = "serialport5"
-version = "5.0.0"
+version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "720e3bb01a4930eaa477ed2d421ffd45bfdaec452d7c0c0251fb064dc7257171"
+checksum = "71cd9aca5ec648b942121a836f9221aa1967b627233bac884cd2559e13864d78"
 dependencies = [
  "CoreFoundation-sys",
  "IOKit-sys",

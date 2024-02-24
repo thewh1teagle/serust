@@ -16,7 +16,7 @@ anyhow = "1.0.79"
 clap = { version = "4.4.12", features = ["derive"] }
 env_logger = "0.10.1"
 log = "0.4.20"
-serialport5 = { version = "5.0.0"} # currenly the only branch which works on windows
+serialport5 = { version = "5.0.1"} # currenly the only branch which works on windows
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
