@@ -10,7 +10,7 @@ Serial monitor in Rust
 
 # Installation
 
-To install rsc, please visit the [serust website](https://thewh1teagle.github.io/serust/)
+To install Serust, please visit the [serust website](https://thewh1teagle.github.io/serust/)
 
 
 # Usage
