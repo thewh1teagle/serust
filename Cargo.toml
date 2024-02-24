@@ -1,5 +1,8 @@
 [package]
 name = "serust"
+repository = "https://github.com/thewh1teagle/serust"
+homepage = "https://thewh1teagle.github.io/serust/"
+authors = ["thewh1teagle"]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
@@ -14,3 +17,21 @@ clap = { version = "4.4.12", features = ["derive"] }
 env_logger = "0.10.1"
 log = "0.4.20"
 serialport5 = { version = "5.0.0"} # currenly the only branch which works on windows
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.11.1"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"

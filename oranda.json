@@ -1,0 +1,20 @@
+{
+    "build": {
+        "path_prefix": "serust/"
+    },
+    "styles": {
+        "theme": "axodark",
+        "favicon": "https://www.axo.dev/favicon.ico"
+    },
+    "components": {
+        "changelog": true,
+        "artifacts": {
+            "package_managers": {
+                "additional": {
+                    "winget": "winget install Thewh1teagle.Serust",
+                    "cargo": "cargo install serust"
+                }
+            }
+        }
+    }
+}
