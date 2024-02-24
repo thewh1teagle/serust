@@ -21,7 +21,5 @@ serust -h
 
 # Build
 ```console
-git clone https://github.com/thewh1teagle/serust
-cd serust
 cargo build --release
 ```
