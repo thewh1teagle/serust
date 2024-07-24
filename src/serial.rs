@@ -14,9 +14,9 @@ pub fn find_by_usb_info(args: &Args) -> Result<Option<SerialPortInfo>> {
             SerialPortType::UsbPort(info) => {
                 let pid = format!("{:04x}", info.pid);
                 let vid = format!("{:04x}", info.vid);
-                if args.product_id.clone().unwrap_or_default() == pid {
+                if args.pid.clone().unwrap_or_default() == pid {
                     return Ok(Some(port_clone));
-                } else if args.vendor_id.clone().unwrap_or_default() == vid {
+                } else if args.vid.clone().unwrap_or_default() == vid {
                     return Ok(Some(port_clone));
                 }
             }
@@ -27,7 +27,7 @@ pub fn find_by_usb_info(args: &Args) -> Result<Option<SerialPortInfo>> {
 }
 
 pub fn open_serial_port(args: &Args) -> Result<(SerialPort, String)> {
-    let port_name = if args.product_id.is_some() || args.vendor_id.is_some() {
+    let port_name = if args.pid.is_some() || args.vid.is_some() {
         find_by_usb_info(&args)?.map(|port_info| port_info.port_name)
     } else {
         args.port.clone()
